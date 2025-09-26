@@ -1,0 +1,41 @@
+﻿@page "/cakes"
+@using BlazorCakes.Data
+@using BlazorCakes.Models
+@rendermode InteractiveServer
+@inject AppDbContext Db
+
+<h3>Cakes</h3>
+
+<input @bind="newCake.Name" placeholder="Name" />
+<input @bind="newCake.Price" type="number" step="0.01" placeholder="Price" />
+<button @onclick="AddCake">Add</button>
+
+<ul>
+    @foreach (var c in cakes)
+    {
+        <li>@c.Name - $@c.Price</li>
+    }
+</ul>
+
+@code {
+	private List<Cake> cakes = new();
+	private Cake newCake = new();
+
+	protected override void  OnInitialized()
+	{
+		cakes =  Db.cakes.ToList();
+
+
+	}	
+
+	private void AddCake()
+	{ 
+		Db.cakes.Add(newCake);
+		Db.SaveChanges();
+		cakes =  Db.cakes.ToList();
+		newCake = new Cake();
+	
+	}
+
+ 
+}
