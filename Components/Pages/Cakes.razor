@@ -6,17 +6,41 @@
 
 <h3>Cakes</h3>
 
-<input @bind="newCake.Name" placeholder="Name" />
-<input @bind="newCake.Price" type="number" step="0.01" placeholder="Price" />
-<button @onclick="AddCake">Add</button>
+<div class="form-group">
+	<label for="name">Name:</label>
+	<input class="form-control" @bind="newCake.Name" placeholder="CakeName" />
+</div>
+<div class="form-group">
+	<label for="price">Price:</label>
+	<input class="form-control" @bind="newCake.Price" type="number" step="0.01" placeholder="Price" />
+</div>
+<br />
+<button type="button" class="btn btn-primary" @onclick="AddCake">Add</button>
 
-<ul>
-    @foreach (var c in cakes)
-    {
-        <li>@c.Name - $@c.Price</li>
-    }
-</ul>
-
+@if (cakes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in cakes)
+            {
+                <tr>
+                    <td>@c.Name</td>
+                    <td>@c.Price</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 @code {
 	private List<Cake> cakes = new();
 	private Cake newCake = new();
@@ -30,12 +54,15 @@
 
 	private void AddCake()
 	{ 
+		if (string.IsNullOrWhiteSpace(newCake.Name) || newCake.Price <= 0)
+		{
+			return;
+		}	
+
 		Db.cakes.Add(newCake);
 		Db.SaveChanges();
 		cakes =  Db.cakes.ToList();
 		newCake = new Cake();
 	
 	}
-
- 
 }
