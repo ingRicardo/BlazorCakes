@@ -1,6 +1,7 @@
 ﻿@page "/cakes"
 @using BlazorCakes.Data
 @using BlazorCakes.Models
+ 
 @rendermode InteractiveServer
 @inject AppDbContext Db
 
@@ -31,7 +32,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var c in cakes)
+            @foreach (var c in PagedCakes())
             {
                 <tr>
                     <td>@c.Name</td>
@@ -40,15 +41,27 @@ else
             }
         </tbody>
     </table>
+    <div class="d-flex justify-content-between">
+    <button class="btn btn-primary" @onclick="PrevPage" disabled="@((currentPage == 1))">Previous</button>
+    <span>Page @currentPage of @TotalPages</span>
+    <button class="btn btn-primary" @onclick="NextPage" disabled="@((currentPage == TotalPages))">Next</button>
+</div>
 }
+
 @code {
 	private List<Cake> cakes = new();
 	private Cake newCake = new();
 
+
+	private int currentPage = 1;
+    private int pageSize = 5;
+
+    private int TotalPages => (int)Math.Ceiling((double)cakes.Count / pageSize);
+
+
 	protected override void  OnInitialized()
 	{
 		cakes =  Db.cakes.ToList();
-
 
 	}	
 
@@ -65,4 +78,19 @@ else
 		newCake = new Cake();
 	
 	}
+
+	private IEnumerable<Cake> PagedCakes()
+    {
+        return cakes.Skip((currentPage - 1) * pageSize).Take(pageSize);
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < TotalPages) currentPage++;
+    }
+
+    private void PrevPage()
+    {
+        if (currentPage > 1) currentPage--;
+    }
 }
