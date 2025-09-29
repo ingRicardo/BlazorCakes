@@ -1,0 +1,119 @@
+﻿@page "/image-gallery"
+@rendermode InteractiveServer
+@if (Images.Length > 0)
+{
+<div class="slider">
+    <button @onclick="PrevImage">❮</button>
+
+    <img src="@Images[CurrentIndex]" alt="Slider image" />
+
+    <button @onclick="NextImage">❯</button>
+</div>
+
+<div class="indicators">
+
+    @for (int i = 0; i < Images.Length; i++)
+    {
+        var index = i;  // Capture the loop variable
+        <span class="dot @(i == CurrentIndex ? "active" : "")"
+              @onclick="() => GoToImage(index)">
+        </span>
+    }
+</div>
+}
+else
+{
+    <p>No images to display.</p>
+}
+@code {
+    // Array of image URLs
+    private string[] Images = new[]
+    {
+        "images/cake1.jpg",
+        "images/cake2.jpg",
+        "images/cake3.jpg"
+    };
+
+    private int CurrentIndex = 0;
+
+    private void NextImage()
+    {   if (Images.Length == 0) return;
+
+        CurrentIndex = (CurrentIndex + 1) % Images.Length;
+        Console.WriteLine(CurrentIndex);
+
+    }
+
+    private void PrevImage()
+    {
+        if (Images.Length == 0) return;
+
+        CurrentIndex = (CurrentIndex - 1 + Images.Length) % Images.Length;
+    }
+
+    private void GoToImage(int index)
+    {
+        if (Images.Length == 0) return;
+
+
+        if (index >= 0 && index < Images.Length)
+        {
+            CurrentIndex = index;
+            Console.WriteLine(CurrentIndex);
+        }
+    }
+
+}
+<style>
+.slider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+}
+
+    .slider img {
+        width: 400px;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        transition: opacity 0.5s ease-in-out;
+    }
+
+    .slider button {
+        background: rgba(0,0,0,0.5);
+        border: none;
+        color: white;
+        font-size: 24px;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 50%;
+    }
+
+        .slider button:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+.indicators {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    margin: 0 4px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+}
+
+    .dot.active {
+        background-color: #333;
+    }
+
+
+
+</style>
