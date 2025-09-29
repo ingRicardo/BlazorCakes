@@ -18,16 +18,37 @@ else if (!orders.Any())
 }
 else
 {
-    <ul>
-        @foreach (var o in orders)
+    <table class="table">
+    <thead>
+        <tr>
+            <th>CustomerName</th>
+            <th>OrderDate</th>
+            <th>TotalAmount</th>
+            <th>CakeName</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var o in PagedOrders())
         {
-            <li>@o.CustomerName - @o.OrderDate.ToShortDateString() - $@o.TotalAmount -@o.CakeName - 
-                @o.Status
-            </li>
+            <tr>
+                <td>@o.CustomerName</td>
+                <td>@o.OrderDate.ToShortDateString()</td>
+                <td>@o.TotalAmount</td>
+                <td>@o.CakeName</td>
+                <td>@o.Status</td>
+                
+            </tr>
         }
-    </ul>
+    </tbody>
+</table>
+<div class="d-flex justify-content-between">
+    <button class="btn btn-primary" @onclick="PrevPage" disabled="@((currentPage == 1))">Previous</button>
+    <span>Page @currentPage of @TotalPages</span>
+    <button class="btn btn-primary" @onclick="NextPage" disabled="@((currentPage == TotalPages))">Next</button>
+</div>
 }
-
+<br/>
 <h4>Add Order</h4>
 
 <div class="form-group">
@@ -48,7 +69,12 @@ else
 </div>
 <div class="form-group">
     <label for="status">Status:</label>
-    <input class="form-control" type="text" placeholder="Status" @bind="newOrder.Status" />
+    <InputSelect class="form-control" @bind-Value="OrderStatus.SelectedOption">
+    @foreach (var option in Options)
+    {
+        <option value="@option.Value">@option.Text</option>
+    }
+    </InputSelect>
 </div>
 <br>
 <button type="button" class="btn btn-primary" @onclick="AddOrder">Add Order</button>
@@ -57,6 +83,11 @@ else
     private List<Order>? orders;
     private Order newOrder = new();
 
+    private int currentPage = 1;
+    private int pageSize = 5;
+
+    private int TotalPages => (int)Math.Ceiling((double)orders.Count / pageSize);
+
     protected override async Task OnInitializedAsync()
     {
         orders = await Db.Orders.ToListAsync();
@@ -64,9 +95,49 @@ else
 
     private async Task AddOrder()
     {
+        if(string.IsNullOrWhiteSpace(newOrder.CustomerName) || newOrder.TotalAmount <= 0 || string.IsNullOrWhiteSpace(newOrder.CakeName) || string.IsNullOrWhiteSpace(newOrder.Status))
+        {
+            // Simple validation
+            return;
+        }
+        newOrder.Status = OrderStatus.SelectedOption;
         Db.Orders.Add(newOrder);
         await Db.SaveChangesAsync();
         orders = await Db.Orders.ToListAsync();
         newOrder = new();
+    }
+    private IEnumerable<Order> PagedOrders()
+    {
+        return orders.Skip((currentPage - 1) * pageSize).Take(pageSize);
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < TotalPages) currentPage++;
+    }
+
+    private void PrevPage()
+    {
+        if (currentPage > 1) currentPage--;
+    }
+
+    public class MyStatus
+    {
+        public string SelectedOption { get; set; }
+    }
+    private MyStatus OrderStatus = new MyStatus();
+
+    private List<OptionItem> Options = new List<OptionItem>
+    {
+        new OptionItem { Value = "Pending", Text = "Pending" },
+        new OptionItem { Value = "Closed", Text = "Closed" },
+        new OptionItem { Value = "Open", Text = "Open" },
+        new OptionItem { Value = "Cancel", Text = "Cancel" }
+
+    };
+     public class OptionItem
+    {
+        public string Value { get; set; }
+        public string Text { get; set; }
     }
 }
