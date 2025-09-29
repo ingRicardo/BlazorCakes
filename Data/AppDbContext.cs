@@ -8,5 +8,8 @@ namespace BlazorCakes.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Cake> cakes { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
     }
 }

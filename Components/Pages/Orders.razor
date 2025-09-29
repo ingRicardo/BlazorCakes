@@ -1,0 +1,72 @@
+﻿
+@page "/orders"
+@using BlazorCakes.Data
+@using BlazorCakes.Models
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+@inject AppDbContext Db
+
+<h3>Orders</h3>
+
+@if (orders is null)
+{
+    <p>Loading...</p>
+}
+else if (!orders.Any())
+{
+    <p>No orders yet.</p>
+}
+else
+{
+    <ul>
+        @foreach (var o in orders)
+        {
+            <li>@o.CustomerName - @o.OrderDate.ToShortDateString() - $@o.TotalAmount -@o.CakeName - 
+                @o.Status
+            </li>
+        }
+    </ul>
+}
+
+<h4>Add Order</h4>
+
+<div class="form-group">
+	<label for="name">Customer Name:</label>
+	<input class="form-control" type="text" placeholder="Customer Name" @bind="newOrder.CustomerName" />
+</div>
+<div class="form-group">
+    <label for="total">Total Amount:</label>
+    <input class="form-control" type="number" placeholder="Total Amount" @bind="newOrder.TotalAmount" />
+</div>
+<div class="form-group">
+    <label for="date">Order Date:</label>
+    <input class="form-control" type="date" @bind="newOrder.OrderDate" />
+</div>
+<div class="form-group">
+    <label for="cake">Cake Name:</label>    
+    <input class="form-control" type="text" @bind="newOrder.CakeName" />
+</div>
+<div class="form-group">
+    <label for="status">Status:</label>
+    <input class="form-control" type="text" placeholder="Status" @bind="newOrder.Status" />
+</div>
+<br>
+<button type="button" class="btn btn-primary" @onclick="AddOrder">Add Order</button>
+
+@code {
+    private List<Order>? orders;
+    private Order newOrder = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await Db.Orders.ToListAsync();
+    }
+
+    private async Task AddOrder()
+    {
+        Db.Orders.Add(newOrder);
+        await Db.SaveChangesAsync();
+        orders = await Db.Orders.ToListAsync();
+        newOrder = new();
+    }
+}
